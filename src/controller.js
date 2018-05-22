@@ -7,6 +7,8 @@ class Controller {
         view.on('toggle', this.toggleTodo.bind(this));
         view.on('edit', this.editTodo.bind(this));
         view.on('remove', this.removeTodo.bind(this));
+
+        view.show(model.items);
     }
 
     addTodo(title) {
@@ -25,7 +27,7 @@ class Controller {
         this.view.toggleItem(todo);
     }
 
-    editTodo({ id, title}) {
+    editTodo({ id, title }) {
         const todo = this.model.updateItem(id, { title });
 
         this.view.editItem(todo);

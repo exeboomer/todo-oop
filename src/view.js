@@ -11,33 +11,37 @@ class View extends EventEmitter {
         this.form.addEventListener('submit', this.handleAdd.bind(this));
     }
 
-    createElement(todo) {
+    createListItem(todo) {
         const checkbox = createElement('input', { type: 'checkbox', className: 'checkbox', checked: todo.completed ? 'checked' : '' });
         const label = createElement('label', { className: 'title' }, todo.title);
         const editInput = createElement('input', { type: 'text', className: 'textfield' });
         const editButton = createElement('button', { className: 'edit' }, 'Изменить');
-        const removeButton = createElement('button', { className: 'remove' }, 'Удалить');
-        const item = createElement('li', { className: `todo-item${todo.completed ? ' completed' : ''}`, 'data-id': todo.id }, checkbox, label, editInput, editButton, removeButton);
+        const deleteButton = createElement('button', { className: 'remove' }, 'Удалить');
+        const item = createElement('li', { className: `todo-item${todo.completed ? ' completed' : ''}`, 'data-id': todo.id }, checkbox, label, editInput, editButton, deleteButton);
 
         return this.addEventListeners(item);
     }
 
-    addEventListeners(listItem) {
-        const checkbox = listItem.querySelector('.checkbox');
-        const editButton = listItem.querySelector('button.edit');
-        const removeButton = listItem.querySelector('button.remove');
+    addEventListeners(item) {
+        const checkbox = item.querySelector('.checkbox');
+        const editButton = item.querySelector('button.edit');
+        const removeButton = item.querySelector('button.remove');
 
         checkbox.addEventListener('change', this.handleToggle.bind(this));
         editButton.addEventListener('click', this.handleEdit.bind(this));
         removeButton.addEventListener('click', this.handleRemove.bind(this));
 
-        return listItem;
+        return item;
+    }
+
+    findListItem(id) {
+        return this.list.querySelector(`[data-id="${id}"`);
     }
 
     handleAdd(event) {
         event.preventDefault();
 
-        if(!this.input.value) return alert('Необходимо ввести название задачи');
+        if (!this.input.value) return alert('Необходимо ввести название задачи');
 
         const value = this.input.value;
 
@@ -47,7 +51,7 @@ class View extends EventEmitter {
     handleToggle({ target }) {
         const listItem = target.parentNode;
         const id = listItem.getAttribute('data-id');
-        const completed = target.completed;
+        const completed = target.checked;
 
         this.emit('toggle', { id, completed });
 
@@ -66,7 +70,7 @@ class View extends EventEmitter {
             this.emit('edit', { id, title });
         } else {
             input.value = label.textContent;
-            editButton.text = 'Сохранить';
+            editButton.textContent = 'Сохранить';
             listItem.classList.add('editing');
         }
 
@@ -74,20 +78,22 @@ class View extends EventEmitter {
 
     handleRemove({ target }) {
         const listItem = target.parentNode;
-        const id = listItem.getAttribute('data-id')
-
-        this.emit('remove', ud );
+        this.emit('remove', listItem.getAttribute('data-id'));
     }
 
-    findListItem(id) {
-        return this.list.querySelector(`[data-id="${id}"`);
+    show(todos) {
+        todos.forEach(todo => {
+            const listItem = this.createListItem(todo);
+        
+            this.list.appendChild(listItem);
+        });
     }
 
     addItem(todo) {
-        const listItem = this.createElement(todo);
+        const listItem = this.createListItem(todo);
 
         this.input.value = '';
-        this.list.appendChild(this.listItem);
+        this.list.appendChild(listItem);
     }
 
     toggleItem(todo) {
@@ -115,7 +121,7 @@ class View extends EventEmitter {
     }
 
     removeItem(id) {
-        const listItem = this.findListItem(todo.id);
+        const listItem = this.findListItem(id);
 
         this.list.removeChild(listItem);
     }
